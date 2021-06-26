@@ -25,19 +25,10 @@ transformer_layers = 8
 mlp_head_units = [2048, 1024]
 
 ds = tfds.load("cifar10", as_supervised=True)
-ds_train = (
-    ds["train"]
-        .cache()
-        .shuffle(5 * batch_size)
-        .batch(batch_size)
-        .prefetch(AUTOTUNE)
-)
-ds_test = (
-    ds["test"]
-        .cache()
-        .batch(batch_size)
-        .prefetch(AUTOTUNE)
-)
+
+ds_train = (ds["train"].cache().shuffle(5 * batch_size).batch(batch_size)
+            .prefetch(AUTOTUNE))
+ds_test = (ds["test"].cache().batch(batch_size).prefetch(AUTOTUNE))
 
 strategy = tf.distribute.MirroredStrategy()
 
@@ -63,10 +54,8 @@ with strategy.scope():
                       from_logits=True),
                   metrics=[
                       keras.metrics.SparseCategoricalAccuracy(name="accuracy"),
-                      keras.metrics.SparseTopKCategoricalAccuracy(5,
-                                                                  name="top-5"
-                                                                       "-accuracy"),
-                  ],
+                      keras.metrics.SparseTopKCategoricalAccuracy
+                      (5, name="top-5-accuracy"), ],
                   )
 
     history = model.fit(

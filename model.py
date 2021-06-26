@@ -63,8 +63,8 @@ class VisionTransformer(tf.keras.Model):
     def call(self, input, training):
         inputs = layers.Input(shape=self.inputshape)
         patches = Patches(self.patch_size)(inputs)
-        encoded_patches = PatchEncoder(self.num_patches, self.projection_dim)
-        (patches)
+        encoded_patches = PatchEncoder(self.num_patches, self.projection_dim) \
+            (patches)
 
         for _ in range(self.transformer_layers):
             x1 = layers.LayerNormalization(epsilon=1e-6)(encoded_patches)
