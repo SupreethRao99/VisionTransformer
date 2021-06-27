@@ -60,18 +60,17 @@ class VisionTransformer(tf.keras.Model):
         self.mlp_head_units = mlp_head_units
         self.num_classes = num_classes
 
-    def call(self, input, training):
+    def call(self, input, training, **kwargs):
         inputs = layers.Input(shape=self.inputshape)
         patches = Patches(self.patch_size)(inputs)
-        encoded_patches = PatchEncoder(self.num_patches, self.projection_dim) \
-            (patches)
+        encoded_patches = PatchEncoder(self.num_patches, self.projection_dim)(
+            patches)
 
         for _ in range(self.transformer_layers):
             x1 = layers.LayerNormalization(epsilon=1e-6)(encoded_patches)
             attention_output = layers.MultiHeadAttention(
                 num_heads=self.num_heads, key_dim=self.projection_dim,
-                dropout=0.1
-            )(x1, x1)
+                dropout=0.1)(x1, x1)
             x2 = layers.Add()([attention_output, encoded_patches])
             x3 = layers.LayerNormalization(epsilon=1e-6)(x2)
             x3 = mlp(x3, hidden_units=self.transformer_units, dropout_rate=0.1)
