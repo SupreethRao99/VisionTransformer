@@ -27,9 +27,9 @@ class PatchEncoder(layers.Layer):
     def __init__(self, num_patches, projection_dim):
         super(PatchEncoder, self).__init__()
         self.num_patches = num_patches
-        self.projection = layers.Dense(units=projection_dim)
+        self.projection = layers.Dense(units=projection_dim * 2)
         self.position_embedding = layers.Embedding(
-            input_dim=num_patches, output_dim=projection_dim
+            input_dim=num_patches, output_dim=projection_dim * 2
         )
 
     def call(self, patch, **kwargs):
