@@ -1,8 +1,5 @@
 import tensorflow_addons as tfa
-from tensorflow import keras
-import tensorflow_datasets as tfds
-from model import VisionTransformer
-import tensorflow as tf
+from ViTModel import *
 
 AUTOTUNE = tf.data.experimental.AUTOTUNE
 
@@ -11,7 +8,7 @@ inputshape = (32, 32, 3)
 learning_rate = 0.001
 weight_decay = 0.0001
 batch_size = 32
-num_epochs = 1
+num_epochs = 10
 image_size = 72
 patch_size = 6
 num_patches = (image_size // patch_size) ** 2
@@ -24,11 +21,7 @@ transformer_units = [
 transformer_layers = 8
 mlp_head_units = [2048, 1024]
 
-ds = tfds.load("cifar10", as_supervised=True)
-
-ds_train = (ds["train"].cache().shuffle(5 * batch_size).batch(batch_size)
-            .prefetch(AUTOTUNE))
-ds_test = (ds["test"].cache().batch(batch_size).prefetch(AUTOTUNE))
+(x_train, y_train), (x_test, y_test) = keras.datasets.cifar10.load_data()
 
 strategy = tf.distribute.MirroredStrategy()
 
@@ -42,7 +35,9 @@ with strategy.scope():
         num_heads,
         transformer_units,
         mlp_head_units,
-        num_classes
+        num_classes,
+        x_train,
+        image_size
     )
 
     optimizer = tfa.optimizers.AdamW(
@@ -59,8 +54,8 @@ with strategy.scope():
                   )
 
     history = model.fit(
-        ds_train,
-        validation_data=ds_train,
+        x=x_train,
+        y=y_train,
         batch_size=batch_size,
         epochs=num_epochs,
     )
