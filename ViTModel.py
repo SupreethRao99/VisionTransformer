@@ -4,6 +4,14 @@ from tensorflow.keras import layers
 
 
 def mlp(x, hidden_units, dropout_rate):
+    """
+    Implements a multilayer perceptron that performs the final classification.
+    Uses Gaussian Error Linear units as the activation function.
+    :param x:
+    :param hidden_units:
+    :param dropout_rate:
+    :return: x
+    """
     for units in hidden_units:
         x = layers.Dense(units, activation=tf.nn.gelu)(x)
         x = layers.Dropout(dropout_rate)(x)
@@ -11,6 +19,10 @@ def mlp(x, hidden_units, dropout_rate):
 
 
 class Patches(layers.Layer):
+    """
+    Splits the provided image into patches
+    """
+
     def __init__(self, patch_size):
         super(Patches, self).__init__()
         self.patch_size = patch_size
@@ -30,6 +42,11 @@ class Patches(layers.Layer):
 
 
 class PatchEncoder(layers.Layer):
+    """
+    Linearly encodes the split patches into a dimension as provided bu the
+    projection_dim parameter. It also adds a learnable positional embedding
+    """
+
     def __init__(self, num_patches, projection_dim):
         super(PatchEncoder, self).__init__()
         self.num_patches = num_patches
@@ -55,7 +72,23 @@ def VisionTransformer(inputshape,
                       num_classes,
                       x_train,
                       image_size):
+    """
+    Builds the VisionTransformer model using a Transformer encoder
+    :param inputshape:
+    :param patch_size:
+    :param num_patches:
+    :param projection_dim:
+    :param transformer_layers:
+    :param num_heads:
+    :param transformer_units:
+    :param mlp_head_units:
+    :param num_classes:
+    :param x_train:
+    :param image_size:
+    :return:
+    """
     inputs = layers.Input(shape=inputshape)
+
     data_augmentation = keras.Sequential(
         [
             layers.experimental.preprocessing.Normalization(),
@@ -70,7 +103,7 @@ def VisionTransformer(inputshape,
     )
     # Compute the mean and the variance of the training data for normalization.
     data_augmentation.layers[0].adapt(x_train)
-
+    # Perform image augmentation
     augmented = data_augmentation(inputs)
     # Create patches.
     patches = Patches(patch_size)(augmented)

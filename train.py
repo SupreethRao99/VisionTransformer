@@ -1,8 +1,6 @@
 import tensorflow_addons as tfa
 from ViTModel import *
 
-AUTOTUNE = tf.data.experimental.AUTOTUNE
-
 num_classes = 10
 inputshape = (32, 32, 3)
 learning_rate = 0.001
@@ -23,6 +21,7 @@ mlp_head_units = [2048, 1024]
 
 (x_train, y_train), (x_test, y_test) = keras.datasets.cifar10.load_data()
 
+# distributes training job on all available GPU's using a mirrored strategy
 strategy = tf.distribute.MirroredStrategy()
 
 with strategy.scope():
