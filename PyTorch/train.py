@@ -1,5 +1,5 @@
 import os
-
+import yaml
 from catalyst import dl
 from catalyst.contrib.datasets import MNIST
 from catalyst.data import ToTensor
@@ -8,13 +8,27 @@ from torch.utils.data import DataLoader
 
 from ViTModel import ViT
 
-model = ViT(image_size=28, patch_size=7, num_classes=10, channels=1,
-            dim=64, depth=6, heads=8, mlp_dim=128)
+with open('config.yaml', 'r') as stream:
+    try:
+        config = yaml.safe_load(stream)
+    except yaml.YAMLError as exc:
+        print(exc)
+
+model = ViT(image_size=config['image_size'],
+            patch_size=config['patch_size'],
+            num_classes=config['num_classes'],
+            channels=config['channels'],
+            dim=config['dim'],
+            depth=config['depth'],
+            heads=config['heads'],
+            mlp_dim=config['mlp_dim'])
+
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=0.002)
+optimizer = optim.Adam(model.parameters(), lr=config['lr'])
 
 train_data = MNIST(os.getcwd(), train=True, download=True, transform=ToTensor())
-valid_data = MNIST(os.getcwd(), train=False, download=True, transform=ToTensor())
+valid_data = MNIST(os.getcwd(), train=False, download=True,
+                   transform=ToTensor())
 loaders = {
     "train": DataLoader(train_data, batch_size=32),
     "valid": DataLoader(valid_data, batch_size=32),
@@ -39,7 +53,8 @@ runner.train(
         dl.AccuracyCallback(
             input_key="logits", target_key="targets", topk_args=(1, 3, 5)),
         dl.PrecisionRecallF1SupportCallback(
-            input_key="logits", target_key="targets", num_classes=10
+            input_key="logits", target_key="targets",
+            num_classes=config['num_classes']
         ),
     ],
     logdir="./logs",
