@@ -1,2 +1,5 @@
 tensorflow
 tensorflow-addons
+torch
+catalyst
+einops
